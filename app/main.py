@@ -24,15 +24,12 @@ app = get_application()
 async def get_index(
     settings: AppSettings = Depends(get_app_settings)
 ):
-    print(settings.base_dir, "<><><>___get_index")
     return FileResponse(settings.base_dir / "static/index.html")
 
 
 @app.get("/healthcheck")
 async def healthcheck():
     settings = get_app_settings()
-    print(settings.base_dir, "<><><>___healthcheck")
-
     return {"message": "I'm healthy"}
 
 
