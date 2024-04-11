@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Online Calculator</title>
+    <style>
+        #calculator {
+            width: 600px;
+            margin: 100px auto;
+        }
+
+        .calc-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button {
+            width: 100px;
+            height: 50px;
+            margin: 2px;
+            font-size: 18px;
+        }
+
+        #expression {
+            width: 246px;
+            height: 50px;
+            margin: 2px;
+            font-size: 18px;
+            text-align: right;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="calculator">
+    <div class="calc-row">
+        <input id="expression" name="source" required><br><br>
+        <button onclick="calculate()" class="calc-row">Calculate</button>
+    </div>
+    <div id="results">
+
+    </div>
+</div>
+
+<script>
+    async function calculate() {
+        let expressionElement = document.getElementById('expression');
+        let expressionValue = expressionElement.value.trim();
+
+        // Check value
+        if (!expressionValue) {
+            alert('Please enter an expression to calculate.');
+            return;
+        }
+        let pattern = new RegExp('^(\\d+(\\.\\d+)?)\\s*([-+*/])\\s*(\\d+(\\.\\d+)?)$')
+        const check_result = pattern.test(expressionValue);
+        if (!check_result) {
+            alert("Expression isn't valid. Please enter a valid expression to calculate.");
+            return;
+        }
+
+        // Extract the base URL into a variable for easier maintenance and potential reusability
+        const apiBaseUrl = '/api/v1/simple/calc';
+        const queryParams = new URLSearchParams({source: expressionValue}).toString();
+        const url = `${apiBaseUrl}?${queryParams}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            // Check if the response is not ok (status code in the range 200-299)
+            if (!response.ok) {
+                throw new Error(`Server responded with status code ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Display the result in the HTML page
+            let resultsElement = document.getElementById('results');
+            let calcResultElement = document.createElement('p');
+            calcResultElement.textContent = `${data.expression}=${data.result}`;
+            resultsElement.appendChild(calcResultElement);
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while trying to calculate the expression. Please try again.');
+        }
+    }
+</script>
+</body>
+</html>
